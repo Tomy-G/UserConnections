@@ -11,7 +11,7 @@ router.get("/users", (req, res) => {
     .catch((error) => res.json({ message: error }));
 });
 
-//get user with more connections
+//get user with less connections
 router.get("/lessconnections", (req, res) => {
     userSchema
       .find()
@@ -21,8 +21,8 @@ router.get("/lessconnections", (req, res) => {
       .catch((error) => res.json({ message: error }));
   });
 
-  //get user with less connections
-router.get("/lessconnections", (req, res) => {
+  //get user with more connections
+router.get("/moreconnections", (req, res) => {
     userSchema
       .find()
       .sort({'connections.length': 1})
