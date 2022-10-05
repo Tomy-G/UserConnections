@@ -11,6 +11,26 @@ router.get("/users", (req, res) => {
     .catch((error) => res.json({ message: error }));
 });
 
+//get user with more connections
+router.get("/lessconnections", (req, res) => {
+    userSchema
+      .find()
+      .sort({'connections.length': -1})
+      .limit(1)
+      .then((data) => res.json(data))
+      .catch((error) => res.json({ message: error }));
+  });
+
+  //get user with less connections
+router.get("/lessconnections", (req, res) => {
+    userSchema
+      .find()
+      .sort({'connections.length': 1})
+      .limit(1)
+      .then((data) => res.json(data))
+      .catch((error) => res.json({ message: error }));
+  });
+
 //create user
 router.post("/create-user", (req, res) => {
   const user = userSchema(req.body);
@@ -43,6 +63,15 @@ router.put("/update-user", (req, res) => {
       }
       res.json(data);
     })
+    .catch((error) => res.json({ message: error }));
+});
+
+//delete a user
+router.delete("/user", (req, res) => {
+  const { id } = req.query;
+  userSchema
+    .deleteOne({ _id: id })
+    .then((data) => res.json(data))
     .catch((error) => res.json({ message: error }));
 });
 
