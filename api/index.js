@@ -3,6 +3,7 @@ const mongoose = require("mongoose");
 const app = express();
 const dotenv = require("dotenv");
 const userRoute = require("./routes/user");
+const connectionRoute = require("./routes/connection");
 
 dotenv.config();
 
@@ -12,6 +13,7 @@ app.use(express.json());
 
 // routes
 app.use("/api", userRoute);
+app.use("/api", connectionRoute);
 
 app.get("/", (req, res) => {
   res.send("Welcome to my API");
