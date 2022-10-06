@@ -25,17 +25,19 @@ const Container = styled.div`
 `;
 
 const App = () => {
-  const [userId, setUserId] = useState("");
+  const [user, setUser] = useState("");
 
   const handleUser = (user) => {
-    setUserId(user);
+    setUser(user);
   };
+
+  console.log(user);
 
   return (
     <Home>
       <Container>
-        <Users parentCallback={handleUser} />
-        <Connections user={userId} />
+         <Users parentCallback={handleUser} /> 
+        <Connections user={user} />
         <Stats/>
       </Container>
     </Home>
