@@ -1,3 +1,5 @@
+![Picture](./picture.png)
+
 #Technologies:
 
 -Back-end: NodeJS, express y mongoDB.
