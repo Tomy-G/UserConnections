@@ -4,6 +4,7 @@ import PersonIcon from "@mui/icons-material/Person";
 import Avatar from "@mui/material/Avatar";
 import SearchIcon from "@mui/icons-material/Search";
 import Axios from "axios";
+import Modal from 'react-modal';
 
 const Container = styled.div`
   flex: 1;
@@ -19,11 +20,13 @@ const UserBar = styled.div`
   min-height: 100px;
   display: flex;
   align-items: center;
+  justify-content: space-between;
 `;
 
 const UserHeader = styled.h1`
   color: white;
-  margin-left: 5px;
+  display: flex;
+  align-items: center;
 `;
 
 const SearchBar = styled.div`
@@ -61,7 +64,7 @@ const UserList = styled.div`
   flex: 9;
   display: flex;
   flex-direction: column;
-  overflow: scroll;
+  overflow-y: scroll;
 `;
 
 const UserInfo = styled.div`
@@ -84,9 +87,38 @@ const UserName = styled.p`
   margin-left: 15px;
 `;
 
+const AddButton = styled.button`
+  margin-right: 15px;
+  border: none;
+  border-radius: 5px;
+  padding: 10px;
+  cursor: pointer;
+`;
+
+const customStyles = {
+  content: {
+    top: '50%',
+    left: '50%',
+    right: 'auto',
+    bottom: 'auto',
+    marginRight: '-50%',
+    transform: 'translate(-50%, -50%)',
+    borderRadius: "10px",
+    backgroundColor: "lightblue"
+  },
+  overlay: {zIndex: 1000}
+};
+
+Modal.setAppElement(document.getElementById('root'));
+
 const Users = (props) => {
   const [userList, setUserList] = useState([]);
-  const [searchText, setSearchText] = useState("a");
+  const [searchText, setSearchText] = useState("");
+  const [modalIsOpen, setIsOpen] = React.useState(false);
+  const [newUser, setNewUser] = React.useState("");
+  const [filtered, setFiltered] = useState([])
+  var filteredList = [];
+  let subtitle;
 
   useEffect(() => {
     console.log("SE ESTA EJECUTANDOo");
@@ -96,13 +128,59 @@ const Users = (props) => {
     });
   }, []);
 
+  useEffect(() => {
+    setFiltered([]);
+    userList && userList.map((ele)=>{
+      ((ele.name).toLowerCase()).startsWith(searchText) && 
+       (filteredList = [...filteredList, ele]);
+      setFiltered(filteredList);
+    })
+    filteredList = []
+  }, [searchText]);
+
+  function openModal() {
+    setIsOpen(true);
+  }
+
+  function afterOpenModal() {
+    // references are now sync'd and can be accessed.
+    //subtitle.style.color = '#f00';
+  }
+
+  function closeModal() {
+    setIsOpen(false);
+  }
+
+  function addUser(){
+    newUser && Axios.post("http://localhost:5000/api/create-user", { name: newUser })
+  }
+
+
   return (
+    
     <Container>
+      <Modal
+        isOpen={modalIsOpen}
+        onAfterOpen={afterOpenModal}
+        onRequestClose={closeModal}
+        style={customStyles}
+        contentLabel="Example Modal"
+        
+      >
+        <h2 ref={(_subtitle) => (subtitle = _subtitle)}>Add User</h2>
+        {/* <button onClick={closeModal}>close</button> */}
+        <form>
+          <input onChange={(event)=>setNewUser(event.target.value)} />
+          <button onClick={addUser}>ADD</button>
+        </form>
+      </Modal>
       <UserBar>
+        <UserHeader>
         <PersonIcon
-          style={{ color: "white", fontSize: 30, marginLeft: "15px" }}
+          style={{ color: "white", fontSize: 30, marginLeft: "15px", marginRight: "5px" }}
         />
-        <UserHeader>User List</UserHeader>
+          User List</UserHeader>
+        <AddButton onClick={openModal}>ADD USER</AddButton>
       </UserBar>
       <SearchBar>
         <SearchText>Find a user</SearchText>
@@ -123,8 +201,8 @@ const Users = (props) => {
       </SearchBar>
       <UserList>
         {Object.prototype.toString.call(userList) ===
-          "[object Array]" &&
-          userList.map((val, key) => {
+          "[object Array]"  &&
+          (!searchText ? userList : filtered).map((val, key) => {
             return (
               <UserInfo
               
@@ -144,6 +222,10 @@ const Users = (props) => {
               </UserInfo>
             );
           })}
+
+        
+
+          
       </UserList>
     </Container>
   );
