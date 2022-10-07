@@ -15,7 +15,7 @@ router.get("/users", (req, res) => {
 router.get("/lessconnections", (req, res) => {
     userSchema
       .find()
-      .sort({'connections.length': -1})
+      .sort({'connections.length': 1})
       .limit(1)
       .then((data) => res.json(data))
       .catch((error) => res.json({ message: error }));
@@ -25,7 +25,7 @@ router.get("/lessconnections", (req, res) => {
 router.get("/moreconnections", (req, res) => {
     userSchema
       .find()
-      .sort({'connections.length': 1})
+      .sort({'connections.length': -1})
       .limit(1)
       .then((data) => res.json(data))
       .catch((error) => res.json({ message: error }));
@@ -53,7 +53,6 @@ router.get("/user", (req, res) => {
 router.put("/update-user", (req, res) => {
   const user1 = req.query.user1;
   const user2 = req.query.user2;
-  console.log(user1 + " " + user2);
   userSchema
     .findById(user1)
     .then((data) => {

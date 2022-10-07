@@ -1,9 +1,10 @@
 import React from "react";
 import { useState } from "react";
 import styled from "styled-components";
-import Users from "./components/Users"
-import Connections from "./components/Connections"
-import Stats from "./components/Stats"
+import Users from "./components/Users";
+import Connections from "./components/Connections";
+import Stats from "./components/Stats";
+import Axios from "axios";
 
 const Home = styled.div`
   background-color: lightblue;
@@ -14,7 +15,6 @@ const Home = styled.div`
 `;
 
 const Container = styled.div`
-  //border: 1px solid black;
   background-color: teal;
   border-radius: 10px;
   width: 70%;
@@ -31,14 +31,22 @@ const App = () => {
     setUser(user);
   };
 
-  console.log(user);
+  //Reloads the user when a connection is added to him
+  const reloadUsers = (id) => {
+    setUser("");
+    Axios.get("http://localhost:5000/api/user", {
+      params: { id: id },
+    }).then((response) => {
+      setUser(response.data);
+    });
+  };
 
   return (
     <Home>
       <Container>
-         <Users parentCallback={handleUser} /> 
-        <Connections user={user} />
-        <Stats/>
+        <Users parentCallback={handleUser} rerender={user} />
+        <Connections user={user} reloadUsers={reloadUsers} />
+        <Stats />
       </Container>
     </Home>
   );

@@ -4,16 +4,16 @@ const app = express();
 const dotenv = require("dotenv");
 const userRoute = require("./routes/user");
 const connectionRoute = require("./routes/connection");
+const cors = require('cors');
+
 
 dotenv.config();
 
 // middlewares
 app.use(express.json());
-app.use(function(req, res, next) {
-  res.header("Access-Control-Allow-Origin", "*");
-  res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
-  next();
-});
+app.use(cors({
+  origin: '*'
+}));
 
 // routes
 app.use("/api", userRoute);

@@ -3,7 +3,8 @@ import React, { useEffect, useState, useRef } from "react";
 import styled from "styled-components";
 import Axios from "axios";
 import Modal from "react-modal";
-import "../styles/loader.css"
+import ConnectWithoutContactIcon from '@mui/icons-material/ConnectWithoutContact';
+import "../styles/loader.css";
 
 const Container = styled.div`
   flex: 1;
@@ -12,7 +13,7 @@ const Container = styled.div`
 `;
 
 const ConnectionBar = styled.div`
-  background-color: #38a3a5;
+  background-color: #003459;
   box-shadow: 0 2px 4px 0 rgba(0, 0, 0, 0.2), 0 3px 10px 0 rgba(0, 0, 0, 0.19);
   z-index: 1;
   //flex: 1;
@@ -24,20 +25,23 @@ const ConnectionBar = styled.div`
 
 const ConnectionsHeader = styled.h1`
   color: white;
-  margin-left: 15px;
-`;
-
-const ConnectionList = styled.div`
-  background-color: #80ed99;
-  flex: 9;
+  margin-left: 10px;
   display: flex;
-  flex-direction: column;
-  justify-content: center;
   align-items: center;
 `;
 
+const ConnectionList = styled.div`
+  background-color: #007ea7;
+  flex: 9;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  overflow-y: scroll;
+`;
+
 const ConnectionInfo = styled.div`
-  min-height: 70px;
+  margin-top: 10px;
+  min-height: 40px;
   width: 100%;
   display: flex;
   align-items: center;
@@ -46,7 +50,7 @@ const ConnectionInfo = styled.div`
 const ConnectionName = styled.p`
   color: black;
   font-size: 20px;
-  font-weight: 400;
+  font-weight: 600;
   margin-left: 15px;
 `;
 
@@ -54,8 +58,10 @@ const AddButton = styled.button`
   margin-right: 15px;
   border: none;
   border-radius: 5px;
-  padding: 10px;
+  padding: 5px;
   cursor: pointer;
+  font-weight:1000 ;
+  background-color: white;
 `;
 
 const customStyles = {
@@ -66,17 +72,24 @@ const customStyles = {
     bottom: "auto",
     marginRight: "-50%",
     transform: "translate(-50%, -50%)",
+    borderRadius: "10px",
+    backgroundColor: "#007ea7",
+    width: "25vw",
+    height: "25vh",
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "center",
+    justifyContent: "center"
   },
   overlay: { zIndex: 1000 },
 };
 
 Modal.setAppElement(document.getElementById("root"));
 
-const Connections = ({ user }) => {
+const Connections = ({ user, reloadUsers }) => {
   var nameList = [];
   const [names, setNames] = useState([]);
   const [modalIsOpen, setIsOpen] = React.useState(false);
-  let subtitle;
 
   const [userList, setUserList] = useState([]);
 
@@ -90,7 +103,6 @@ const Connections = ({ user }) => {
             params: { id: ele },
           }).then((response) => {
             nameList = [...nameList, response.data.name];
-            console.log("sellena" + nameList);
             setNames(nameList);
           });
         });
@@ -100,7 +112,6 @@ const Connections = ({ user }) => {
   useEffect(() => {
     Axios.get("http://localhost:5000/api/users").then((response) => {
       setUserList(response.data);
-      console.log(response.data);
     });
   }, []);
 
@@ -117,7 +128,38 @@ const Connections = ({ user }) => {
     setIsOpen(false);
   }
 
-  console.log(userList);
+  function newConnection(us) {
+    const user2 = JSON.parse(us);
+    if (user && !names.includes(user2.name)) {
+      try {
+
+           Axios.put(
+            "http://localhost:5000/api/update-user?user1=" +
+              user._id +
+              "&user2=" +
+              user2._id
+          ).then((response) => {
+            Axios.post("http://localhost:5000/api/add-connection", {
+              user1: user._id,
+              user2: user2._id,
+            })
+              .then(
+                Axios.put(
+                  "http://localhost:5000/api/update-user?user1=" +
+                    user2._id +
+                    "&user2=" +
+                    user._id
+                )
+              )
+              .then(reloadUsers(user._id));
+          });
+      } catch (error) {
+        console.error(error.response);
+      }
+    }
+    closeModal();
+  }
+
 
   return (
     <Container>
@@ -128,9 +170,12 @@ const Connections = ({ user }) => {
         style={customStyles}
         contentLabel="Example Modal"
       >
-        {/* <button onClick={closeModal}>close</button> */}
+        <h2 style={{marginBottom : "25px", fontSize:"35px"}}>Add Connection</h2>
         <form>
-          <select defaultValue="">
+          <select
+            defaultValue=""
+            onChange={(event) => newConnection(event.target.value)}
+          >
             <option value="" disabled selected>
               {" "}
               SELECT A USER TO CONNECT WITH
@@ -138,7 +183,7 @@ const Connections = ({ user }) => {
             {userList.map((item) => {
               return (
                 item.name != user.name && (
-                  <option value={item.name}>{item.name}</option>
+                  <option value={JSON.stringify(item)}>{item.name}</option>
                 )
               );
             })}
@@ -146,21 +191,29 @@ const Connections = ({ user }) => {
         </form>
       </Modal>
       <ConnectionBar>
+      
         <ConnectionsHeader>
+        <ConnectWithoutContactIcon style={{
+              color: "white",
+              fontSize: 30,
+              marginRight: "5px",
+            }}/>
           {!user ? "Select a user" : "Connections of " + user.name}
         </ConnectionsHeader>
         {user && <AddButton onClick={openModal}>ADD CONNECTION</AddButton>}
       </ConnectionBar>
-      <ConnectionList>
-        { !user ? <div className="loader"></div> :
-        
-        names.map((val, key) => {
-          return (
-            <ConnectionInfo>
-              <ConnectionName>{val}</ConnectionName>
-            </ConnectionInfo>
-          );
-        })}
+      <ConnectionList style={{justifyContent: !user ? "center" : "start"}}>
+        {!user ? (
+          <div className="loader"></div>
+        ) : (
+          names.map((val, key) => {
+            return (
+              <ConnectionInfo>
+                <ConnectionName>{val}</ConnectionName>
+              </ConnectionInfo>
+            );
+          })
+        )}
       </ConnectionList>
     </Container>
   );
